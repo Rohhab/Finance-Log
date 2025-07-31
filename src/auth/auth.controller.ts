@@ -12,7 +12,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthGuard } from './auth.guard';
 import { UserDto } from './dtos/user.dto';
 import { User } from 'src/users/entities/user.entity';
 import { JwtAuthGuard } from './jwt-auth.guard';
