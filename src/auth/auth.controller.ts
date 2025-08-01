@@ -10,9 +10,11 @@ import {
   HttpStatus,
   Request,
   UseGuards,
+  UseInterceptors,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { UserDto } from './dtos/user.dto';
+import { CreateUserDto } from './dtos/create-user.dto';
 import { User } from 'src/users/entities/user.entity';
 import { JwtAuthGuard } from './jwt-auth.guard';
 
@@ -20,15 +22,20 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @UseInterceptors(ClassSerializerInterceptor)
   @Post('register')
-  signUp(@Body() dto: UserDto): Promise<User> {
-    return this.authService.signUp(dto);
+  @HttpCode(HttpStatus.CREATED)
+  signUp(@Body() createUserDto: CreateUserDto): Promise<User> {
+    return this.authService.signUp(createUserDto);
   }
 
-  @HttpCode(HttpStatus.OK)
   @Post('login')
-  signIn(@Body() dto: UserDto) {
-    return this.authService.signIn(dto.username, dto.password);
+  @HttpCode(HttpStatus.OK)
+  signIn(@Body() createUserDto: CreateUserDto) {
+    return this.authService.signIn(
+      createUserDto.username,
+      createUserDto.password,
+    );
   }
 
   @UseGuards(JwtAuthGuard)
