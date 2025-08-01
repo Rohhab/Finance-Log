@@ -8,15 +8,19 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
-  Request,
   UseGuards,
   UseInterceptors,
   ClassSerializerInterceptor,
+  Req,
+  Res,
 } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { User } from 'src/users/entities/user.entity';
-import { JwtAuthGuard } from './jwt-auth.guard';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { LocalAuthGuard } from './guards/local-auth.guard';
+import { setAuthCookies } from './utils/cookie.util';
 
 @Controller('auth')
 export class AuthController {
@@ -29,18 +33,35 @@ export class AuthController {
     return this.authService.signUp(createUserDto);
   }
 
+  @UseGuards(LocalAuthGuard)
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  signIn(@Body() createUserDto: CreateUserDto) {
-    return this.authService.signIn(
-      createUserDto.username,
-      createUserDto.password,
-    );
+  async signIn(@Req() req) {
+    return this.authService.signIn(req.user);
+  }
+
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  async refresh(@Req() req: Request, @Res() res: Response) {
+    const refreshToken = req.cookies['refresh_token'];
+    const result = await this.authService.refreshTokens(refreshToken);
+
+    setAuthCookies(res, result.refreshToken);
+
+    return res.send({ access_token: result.accessToken });
+  }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  logout(@Res() res: Response) {
+    res.clearCookie('refresh_token');
+    // Optionally revoke token in DB if stored
+    return res.send({ message: 'Logged out successfully' });
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  getProfile(@Request() req) {
+  getProfile(@Req() req) {
     return req.user;
   }
 }
