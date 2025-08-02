@@ -21,6 +21,7 @@ import { User } from 'src/users/entities/user.entity';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { setAuthCookies } from './utils/cookie.util';
+import { CurrentUser } from './decorators/current-user.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -61,7 +62,7 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  getProfile(@Req() req) {
-    return req.user;
+  getProfile(@CurrentUser() user: AuthenticatedUser) {
+    return { message: `Current user is ${user.username}` };
   }
 }
