@@ -56,8 +56,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   logout(@Res() res: Response) {
     res.clearCookie('refresh_token');
-    // Optionally revoke token in DB if stored
-    return res.send({ message: 'Logged out successfully' });
+    return res.send({ message: 'user logged out successfully' });
   }
 
   @UseGuards(JwtAuthGuard)
