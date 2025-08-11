@@ -6,7 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
-import { CreateUserDto } from 'src/auth/dtos/create-user.dto';
+import { CreateUserDto } from 'auth/dtos/create-user.dto';
 import * as bcrypt from 'bcrypt';
 
 const saltOrRounds = 10;

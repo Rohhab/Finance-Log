@@ -1,14 +1,9 @@
-import {
-  BadRequestException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from 'users/users.service';
 import { CreateUserDto } from './dtos/create-user.dto';
-import { User } from 'src/users/entities/user.entity';
+import { User } from 'users/entities/user.entity';
 import * as bcrypt from 'bcrypt';
-const saltOrRounds = 10;
 
 @Injectable()
 export class AuthService {
@@ -49,7 +44,7 @@ export class AuthService {
   async refreshTokens(
     refreshToken: string,
   ): Promise<{ accessToken: string; refreshToken: string }> {
-    const payload = this.jwtService.verify(refreshToken); // Add your own verification logic
+    const payload = this.jwtService.verify(refreshToken);
 
     const user = await this.usersService.findOneByUsername(payload.username);
     if (!user) {

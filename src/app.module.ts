@@ -7,6 +7,7 @@ import { BankAccountsModule } from './bank-accounts/bank-accounts.module';
 import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './users/entities/user.entity';
+import { RefreshToken } from 'auth/entities/refresh-token.entity';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { User } from './users/entities/user.entity';
       username: 'finance_user',
       password: 'userpass456',
       database: 'finance_log_db',
-      entities: [User],
+      entities: [User, RefreshToken],
       synchronize: true,
     }),
   ],

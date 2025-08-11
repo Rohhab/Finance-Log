@@ -17,7 +17,7 @@ import {
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dtos/create-user.dto';
-import { User } from 'src/users/entities/user.entity';
+import { User } from 'users/entities/user.entity';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { setAuthCookies } from './utils/cookie.util';
