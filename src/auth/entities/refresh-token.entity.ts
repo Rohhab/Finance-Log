@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -13,6 +14,7 @@ export class RefreshToken {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Index()
   @Column()
   token: string;
 
@@ -21,6 +23,12 @@ export class RefreshToken {
 
   @Column()
   revoked: boolean;
+
+  @Column({ type: 'timestamp' })
+  expiresAt: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  revokedAt: Date | null;
 
   @CreateDateColumn()
   created_at: Date;

@@ -4,12 +4,14 @@ import { UsersService } from 'users/users.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { User } from 'users/entities/user.entity';
 import * as bcrypt from 'bcrypt';
+import { RefreshTokenService } from './refresh-token.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private refreshTokenService: RefreshTokenService,
   ) {}
 
   async validateUser(username: string, password: string): Promise<any> {
