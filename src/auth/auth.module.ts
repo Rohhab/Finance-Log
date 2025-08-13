@@ -9,7 +9,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RefreshToken } from './entities/refresh-token.entity';
-import { RefreshTokenService } from './refresh-token.service';
+import { RefreshTokenService } from './token.service';
 
 @Module({
   imports: [

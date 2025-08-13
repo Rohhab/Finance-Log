@@ -6,13 +6,31 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'users/users.service';
 
 @Injectable()
-export class RefreshTokenService {
+export class TokenService {
   constructor(
     @InjectRepository(RefreshToken)
     private refreshTokenRepository: Repository<RefreshToken>,
     private jwtService: JwtService,
     private usersService: UsersService,
   ) {}
+
+  async generateAccessToken(
+    user: AuthenticatedUser,
+  ): Promise<{ access_token: string }> {
+    const payload = { sub: user.id, username: user.username };
+    return { access_token: await this.jwtService.signAsync(payload) };
+  }
+
+  async generateRefreshToken(
+    user: AuthenticatedUser,
+  ): Promise<{ refresh_token: string }> {
+    const payload = { sub: user.id };
+    return {
+      refresh_token: await this.jwtService.signAsync(payload, {
+        expiresIn: '7d',
+      }),
+    };
+  }
 
   async checkTokenInDb(
     refreshToken: string,

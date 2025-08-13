@@ -4,14 +4,14 @@ import { UsersService } from 'users/users.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { User } from 'users/entities/user.entity';
 import * as bcrypt from 'bcrypt';
-import { RefreshTokenService } from './refresh-token.service';
+import { TokenService } from './token.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-    private refreshTokenService: RefreshTokenService,
+    private tokenService: TokenService,
   ) {}
 
   async validateUser(username: string, password: string): Promise<any> {
@@ -36,10 +36,16 @@ export class AuthService {
     return user;
   }
 
-  async signIn(user: AuthenticatedUser): Promise<{ access_token: string }> {
-    const payload = { sub: user.id, username: user.username };
+  async signIn(
+    user: AuthenticatedUser,
+  ): Promise<{ access_token: string; refresh_token: string }> {
+    const { access_token: newAccess } =
+      await this.tokenService.generateAccessToken(user);
+    const { refresh_token: newRefresh } =
+      await this.tokenService.generateRefreshToken(user);
     return {
-      access_token: await this.jwtService.signAsync(payload),
+      access_token: newAccess,
+      refresh_token: newRefresh,
     };
   }
 
