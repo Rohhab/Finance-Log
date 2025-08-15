@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from 'users/users.service';
+import { UsersService } from 'iam/users/users.service';
 
 @Injectable()
 export class TokenService {

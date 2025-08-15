@@ -1,6 +1,6 @@
-import { RefreshToken } from 'auth/entities/refresh-token.entity';
+import { RefreshToken } from 'iam/auth/entities/refresh-token.entity';
 import { DataSource } from 'typeorm';
-import { User } from 'users/entities/user.entity';
+import { User } from 'iam/users/entities/user.entity';
 
 export default new DataSource({
   type: 'mysql',

@@ -1,6 +1,6 @@
 import { Exclude, Expose } from 'class-transformer';
 import { IsEmail, MinLength } from 'class-validator';
-import { RefreshToken } from 'auth/entities/refresh-token.entity';
+import { RefreshToken } from 'iam/auth/entities/refresh-token.entity';
 import {
   Column,
   CreateDateColumn,

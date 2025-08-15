@@ -1,20 +1,17 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UsersModule } from './users/users.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { BankAccountsModule } from './bank-accounts/bank-accounts.module';
-import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './users/entities/user.entity';
-import { RefreshToken } from 'auth/entities/refresh-token.entity';
+import { User } from './iam/users/entities/user.entity';
+import { RefreshToken } from 'iam/auth/entities/refresh-token.entity';
+import { IamModule } from './iam/iam.module';
 
 @Module({
   imports: [
-    UsersModule,
     TransactionsModule,
     BankAccountsModule,
-    AuthModule,
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: '127.0.0.1',
@@ -25,6 +22,7 @@ import { RefreshToken } from 'auth/entities/refresh-token.entity';
       entities: [User, RefreshToken],
       synchronize: true,
     }),
+    IamModule,
   ],
   controllers: [AppController],
   providers: [AppService],
