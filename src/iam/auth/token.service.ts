@@ -50,8 +50,12 @@ export class TokenService {
     user: AuthenticatedUser,
   ): Promise<{ refresh_token: string }> {
     const payload = { sub: user.id };
-    const existingToken = await this.refreshTokenRepository.findOneBy({
-      revoked: false,
+    const existingToken = await this.refreshTokenRepository.findOne({
+      where: {
+        revoked: false,
+        user: { id: payload.sub },
+      },
+      relations: ['user'],
     });
 
     if (existingToken) {
@@ -66,14 +70,6 @@ export class TokenService {
   }
 
   async saveNewRefreshToken(refreshToken: string): Promise<void> {
-    const existingToken = await this.refreshTokenRepository.findOne({
-      where: { token: refreshToken },
-    });
-
-    if (existingToken) {
-      throw new ForbiddenException('User has an active session.');
-    }
-
     const payload = await this.jwtService.verify(refreshToken);
     const userInDb = await this.usersService.findOne(payload.sub);
 
@@ -114,6 +110,7 @@ export class TokenService {
     }
 
     refreshTokenInDb.revoked = true;
+    refreshTokenInDb.revocationReason = reason;
     refreshTokenInDb.revokedAt = new Date();
 
     await this.refreshTokenRepository.save(refreshTokenInDb);
