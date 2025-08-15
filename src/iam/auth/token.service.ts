@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { Repository } from 'typeorm';
@@ -22,7 +26,7 @@ export class TokenService {
     });
 
     if (!existingToken) {
-      return { isTokenValid: false };
+      throw new BadRequestException('');
     }
 
     const now = new Date();
@@ -46,6 +50,14 @@ export class TokenService {
     user: AuthenticatedUser,
   ): Promise<{ refresh_token: string }> {
     const payload = { sub: user.id };
+    const existingToken = await this.refreshTokenRepository.findOneBy({
+      revoked: false,
+    });
+
+    if (existingToken) {
+      throw new ForbiddenException('User has an active session.');
+    }
+
     return {
       refresh_token: await this.jwtService.signAsync(payload, {
         expiresIn: '7d',
@@ -54,6 +66,14 @@ export class TokenService {
   }
 
   async saveNewRefreshToken(refreshToken: string): Promise<void> {
+    const existingToken = await this.refreshTokenRepository.findOne({
+      where: { token: refreshToken },
+    });
+
+    if (existingToken) {
+      throw new ForbiddenException('User has an active session.');
+    }
+
     const payload = await this.jwtService.verify(refreshToken);
     const userInDb = await this.usersService.findOne(payload.sub);
 
