@@ -37,8 +37,19 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async signIn(@Req() req) {
-    return this.authService.signIn(req.user);
+  async signIn(@Req() req, @Res({ passthrough: true }) res: Response) {
+    const { access_token, refresh_token } = await this.authService.signIn(
+      req.user,
+    );
+
+    res.cookie('refresh_token', refresh_token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return { access_token };
   }
 
   @Post('refresh')

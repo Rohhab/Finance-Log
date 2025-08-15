@@ -14,6 +14,27 @@ export class TokenService {
     private usersService: UsersService,
   ) {}
 
+  async checkTokenInDb(
+    refreshToken: string,
+  ): Promise<{ isTokenValid: boolean; refreshTokenInDb?: RefreshToken }> {
+    const existingToken = await this.refreshTokenRepository.findOne({
+      where: { token: refreshToken },
+    });
+
+    if (!existingToken) {
+      return { isTokenValid: false };
+    }
+
+    const now = new Date();
+    return {
+      isTokenValid:
+        !existingToken.revoked &&
+        !existingToken.revokedAt &&
+        existingToken.expiresAt > now,
+      refreshTokenInDb: existingToken,
+    };
+  }
+
   async generateAccessToken(
     user: AuthenticatedUser,
   ): Promise<{ access_token: string }> {
@@ -32,50 +53,17 @@ export class TokenService {
     };
   }
 
-  async checkTokenInDb(
-    refreshToken: string,
-  ): Promise<{ isTokenValid: boolean; refreshTokenInDb?: RefreshToken }> {
-    const TokenInDb = await this.refreshTokenRepository.findOne({
-      where: { token: refreshToken },
-    });
-
-    if (!TokenInDb) {
-      return { isTokenValid: false };
-    }
-
-    const now = new Date();
-    return {
-      isTokenValid:
-        !TokenInDb.revoked && !TokenInDb.revokedAt && TokenInDb.expiresAt > now,
-      refreshTokenInDb: TokenInDb,
-    };
-  }
-
-  async saveToken(refreshToken: string): Promise<void> {
-    const { isTokenValid, refreshTokenInDb } =
-      await this.checkTokenInDb(refreshToken);
-
-    if (!isTokenValid) {
-      throw new BadRequestException(
-        'Refresh token is either expired or invalid.',
-      );
-    }
-    if (refreshTokenInDb) {
-      throw new BadRequestException('Refresh token already stored.');
-    }
-
-    let payload;
-    try {
-      payload = await this.jwtService.verify(refreshToken);
-    } catch (error) {
-      throw new BadRequestException(
-        'Invalid or expired refresh token provided.',
-      );
-    }
-
+  async saveNewRefreshToken(refreshToken: string): Promise<void> {
+    const payload = await this.jwtService.verify(refreshToken);
     const userInDb = await this.usersService.findOne(payload.sub);
+
     if (!userInDb) {
       throw new BadRequestException('User not found.');
+    }
+
+    if (payload.exp * 1000 < Date.now()) {
+      await this.revokeToken(refreshToken, 'Expired');
+      throw new BadRequestException('Refresh token has expired.');
     }
 
     const tokenEntity = await this.refreshTokenRepository.create({
@@ -89,7 +77,10 @@ export class TokenService {
     await this.refreshTokenRepository.save(tokenEntity);
   }
 
-  async revokeToken(refreshToken: string): Promise<void> {
+  async revokeToken(
+    refreshToken: string,
+    reason: 'Expired' | 'Manual' | 'Compromised',
+  ): Promise<void> {
     const { isTokenValid, refreshTokenInDb } =
       await this.checkTokenInDb(refreshToken);
 
