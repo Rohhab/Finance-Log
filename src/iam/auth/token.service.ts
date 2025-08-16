@@ -18,6 +18,23 @@ export class TokenService {
     private usersService: UsersService,
   ) {}
 
+  async findTokenForUser(user: AuthenticatedUser): Promise<RefreshToken> {
+    const payload = { sub: user.id };
+    const existingToken = await this.refreshTokenRepository.findOne({
+      where: {
+        revoked: false,
+        user: { id: payload.sub },
+      },
+      relations: ['user'],
+    });
+
+    if (!existingToken) {
+      throw new BadRequestException('Token is invalid.');
+    }
+
+    return existingToken;
+  }
+
   async checkTokenInDb(
     refreshToken: string,
   ): Promise<{ isTokenValid: boolean; refreshTokenInDb?: RefreshToken }> {
@@ -26,7 +43,7 @@ export class TokenService {
     });
 
     if (!existingToken) {
-      throw new BadRequestException('');
+      throw new BadRequestException('Provided refresh token is invalid.');
     }
 
     const now = new Date();
@@ -69,7 +86,15 @@ export class TokenService {
     };
   }
 
-  async saveNewRefreshToken(refreshToken: string): Promise<void> {
+  async saveInitialRefreshToken(refreshToken: string): Promise<void> {
+    await this.persistRefreshToken(refreshToken);
+  }
+
+  async rotateRefreshToken(refreshToken: string): Promise<void> {
+    await this.persistRefreshToken(refreshToken);
+  }
+
+  async persistRefreshToken(refreshToken: string): Promise<void> {
     const payload = await this.jwtService.verify(refreshToken);
     const userInDb = await this.usersService.findOne(payload.sub);
 

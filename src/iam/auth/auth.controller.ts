@@ -20,7 +20,6 @@ import { CreateUserDto } from './dtos/create-user.dto';
 import { User } from 'iam/users/entities/user.entity';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
-import { setAuthCookies } from './utils/cookie.util';
 import { CurrentUser } from './decorators/current-user.decorator';
 
 @Controller('auth')
@@ -46,26 +45,39 @@ export class AuthController {
       httpOnly: true,
       secure: true,
       sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 Days in milliseconds
     });
 
     return { access_token };
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  async refresh(@Req() req: Request, @Res() res: Response) {
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const refreshToken = req.cookies['refresh_token'];
-    const result = await this.authService.refreshTokens(refreshToken);
+    const { accessToken: newAccess, refreshToken: newRefresh } =
+      await this.authService.refreshTokens(refreshToken);
 
-    setAuthCookies(res, result.refreshToken);
+    res.cookie('refresh_token', newRefresh, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 Days in milliseconds
+    });
 
-    return res.send({ access_token: result.accessToken });
+    return { access_token: newAccess };
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  logout(@Res() res: Response) {
+  async logout(@Req() req, @Res() res: Response) {
+    console.log(req.user);
+    await this.authService.signOut(req.user);
     res.clearCookie('refresh_token');
     return res.send({ message: 'user logged out successfully' });
   }

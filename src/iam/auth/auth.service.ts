@@ -44,7 +44,7 @@ export class AuthService {
     const { refresh_token: newRefresh } =
       await this.tokenService.generateRefreshToken(user);
 
-    await this.tokenService.saveNewRefreshToken(newRefresh);
+    await this.tokenService.saveInitialRefreshToken(newRefresh);
 
     return {
       access_token: newAccess,
@@ -55,25 +55,43 @@ export class AuthService {
   async refreshTokens(
     refreshToken: string,
   ): Promise<{ accessToken: string; refreshToken: string }> {
-    const payload = this.jwtService.verify(refreshToken);
+    const { isTokenValid, refreshTokenInDb } =
+      await this.tokenService.checkTokenInDb(refreshToken);
 
-    const user = await this.usersService.findOneByUsername(payload.username);
-    if (!user) {
+    if (isTokenValid && refreshTokenInDb) {
+      const payload = this.jwtService.verify(refreshToken);
+
+      const user = await this.usersService.findOneByUsername(payload.username);
+      if (!user) {
+        throw new BadRequestException('User not found.');
+      }
+
+      await this.tokenService.revokeToken(refreshToken, 'Manual');
+
+      const { access_token: newAccess } =
+        await this.tokenService.generateAccessToken(user);
+      const { refresh_token: newRefresh } =
+        await this.tokenService.generateRefreshToken(user);
+
+      await this.tokenService.rotateRefreshToken(newRefresh);
+
+      return {
+        accessToken: newAccess,
+        refreshToken: newRefresh,
+      };
+    } else {
+      throw new BadRequestException('Refresh token is not valid.');
+    }
+  }
+
+  async signOut(user: AuthenticatedUser): Promise<void> {
+    const userInDb = await this.usersService.findOneByUsername(user.username);
+
+    if (!userInDb) {
       throw new BadRequestException('User not found.');
     }
 
-    const newAccess = await this.jwtService.signAsync({
-      sub: user.id,
-      username: user.username,
-    });
-    const newRefresh = await this.jwtService.signAsync(
-      { sub: user.id },
-      { expiresIn: '7d' },
-    );
-
-    return {
-      accessToken: newAccess,
-      refreshToken: newRefresh,
-    };
+    const aliveUserToken = await this.tokenService.findTokenForUser(userInDb);
+    await this.tokenService.revokeToken(aliveUserToken.token, 'Manual');
   }
 }
