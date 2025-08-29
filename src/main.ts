@@ -10,6 +10,7 @@ async function bootstrap() {
     cert: fs.readFileSync('./src/cert/cert.pem'),
   };
   const app = await NestFactory.create(AppModule, { httpsOptions });
+  app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe());
   app.use(cookieParser());
   await app.listen(process.env.PORT ?? 3000);
