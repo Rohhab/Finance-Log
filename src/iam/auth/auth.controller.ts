@@ -3,9 +3,6 @@ import {
   Get,
   Post,
   Body,
-  Patch,
-  Param,
-  Delete,
   HttpCode,
   HttpStatus,
   UseGuards,
@@ -76,7 +73,6 @@ export class AuthController {
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   async logout(@Req() req, @Res() res: Response) {
-    console.log(req.user);
     await this.authService.signOut(req.user);
     res.clearCookie('refresh_token');
     return res.send({ message: 'user logged out successfully' });
