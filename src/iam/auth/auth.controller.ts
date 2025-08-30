@@ -83,4 +83,10 @@ export class AuthController {
   getProfile(@CurrentUser() user: AuthenticatedUser) {
     return { message: `Current user is ${user.username}` };
   }
+
+  @Get('google')
+  signInWithGoogle() {}
+
+  @Get('google/callback')
+  redirectedFromGoogle() {}
 }
