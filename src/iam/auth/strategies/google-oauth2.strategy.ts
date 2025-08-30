@@ -10,10 +10,19 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
       clientID:
         '825724090858-a6hreemdvtpi0mab4rdj3sl4dkt8clfn.apps.googleusercontent.com',
       clientSecret: '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',
+      callbackURL: 'https://localhost:3000/api/auth/google/callback',
+      scope: ['email', 'profile'],
+      passReqToCallback: true,
     });
   }
 
-  validate(...args: any[]): unknown {
-    throw new Error('Method not implemented.');
+  async validate(
+    req: Request,
+    accessToken: string,
+    rereshToken: string,
+    profile: any,
+  ): Promise<any> {
+    const user = { userName: profile.emails[0].value };
+    console.log(user);
   }
 }

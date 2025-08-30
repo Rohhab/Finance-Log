@@ -18,6 +18,7 @@ import { User } from 'iam/users/entities/user.entity';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
+import { GoogleAuthGuard } from './guards/google-oauth20.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -84,9 +85,13 @@ export class AuthController {
     return { message: `Current user is ${user.username}` };
   }
 
+  @UseGuards(GoogleAuthGuard)
   @Get('google')
-  signInWithGoogle() {}
+  signInWithGoogle() {
+    return { message: 'Google authentication' };
+  }
 
+  @UseGuards(GoogleAuthGuard)
   @Get('google/callback')
   redirectedFromGoogle() {}
 }
