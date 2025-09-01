@@ -19,6 +19,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { GoogleAuthGuard } from './guards/google-oauth20.guard';
+import { UserResponseDto } from 'iam/users/dtos/user-response.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -27,7 +28,7 @@ export class AuthController {
   @UseInterceptors(ClassSerializerInterceptor)
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  signUp(@Body() createUserDto: CreateUserDto): Promise<User> {
+  signUp(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
     return this.authService.signUp(createUserDto);
   }
 

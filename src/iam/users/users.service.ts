@@ -8,6 +8,8 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from 'iam/auth/dtos/create-user.dto';
 import * as bcrypt from 'bcrypt';
+import { UserResponseDto } from './dtos/user-response.dto';
+import { plainToInstance } from 'class-transformer';
 
 const saltOrRounds = 10;
 
@@ -17,7 +19,7 @@ export class UsersService {
     @InjectRepository(User) private usersRepository: Repository<User>,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
     const { username, password } = createUserDto;
 
     const existingUser = await this.usersRepository.findOneBy({ username });
@@ -30,7 +32,11 @@ export class UsersService {
       username,
       password: hashedPassword,
     });
-    return await this.usersRepository.save(newUser);
+    await this.usersRepository.save(newUser);
+
+    return plainToInstance(UserResponseDto, newUser, {
+      excludeExtraneousValues: true,
+    });
   }
 
   findAll(): Promise<User[]> {

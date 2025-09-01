@@ -5,6 +5,7 @@ import { CreateUserDto } from './dtos/create-user.dto';
 import { User } from 'iam/users/entities/user.entity';
 import * as bcrypt from 'bcrypt';
 import { TokenService } from './token.service';
+import { UserResponseDto } from 'iam/users/dtos/user-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -31,9 +32,9 @@ export class AuthService {
     return null;
   }
 
-  async signUp(createUserDto: CreateUserDto): Promise<User> {
-    const user = await this.usersService.create(createUserDto);
-    return user;
+  async signUp(createUserDto: CreateUserDto): Promise<UserResponseDto> {
+    const userDto = await this.usersService.create(createUserDto);
+    return userDto;
   }
 
   async signIn(
