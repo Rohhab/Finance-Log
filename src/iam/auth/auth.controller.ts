@@ -87,11 +87,11 @@ export class AuthController {
 
   @UseGuards(GoogleAuthGuard)
   @Get('google')
-  signInWithGoogle() {
-    return { message: 'Google authentication' };
-  }
+  signInWithGoogle() {}
 
   @UseGuards(GoogleAuthGuard)
   @Get('google/callback')
-  redirectedFromGoogle() {}
+  redirectedFromGoogle(@Req() req: Request) {
+    return req.user;
+  }
 }
