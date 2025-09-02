@@ -61,9 +61,7 @@ export class AuthService {
     };
   }
 
-  async refreshTokens(
-    refreshToken: string,
-  ): Promise<{
+  async refreshTokens(refreshToken: string): Promise<{
     accessToken: string;
     refreshToken: string;
     user: UserResponseDto;
@@ -79,7 +77,7 @@ export class AuthService {
         throw new BadRequestException('User not found.');
       }
 
-      await this.tokenService.revokeToken(refreshToken, 'Manual');
+      await this.tokenService.revokeToken(refreshToken, 'Refresh');
 
       const { access_token: newAccess } =
         await this.tokenService.generateAccessToken(user);

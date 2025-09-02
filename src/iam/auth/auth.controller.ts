@@ -54,18 +54,28 @@ export class AuthController {
   @UseGuards(RefreshAuthGuard)
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  async refresh(
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
-  ) {}
+  async refresh(@Req() req, @Res({ passthrough: true }) res: Response) {
+    const { accessToken, refreshToken } = req.tokens;
 
-  // @UseGuards(JwtAuthGuard)
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 Days in milliseconds
+    });
+    res.setHeader('Authorization', `Bearer ${accessToken}`);
+
+    return { user: req.user };
+  }
+
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   async logout(@Req() req, @Res() res: Response) {
+    const copyUser = req.user;
+    console.log(copyUser);
     await this.authService.signOut(req.user);
     res.clearCookie('refresh_token');
-    return res.send({ message: 'user logged out successfully' });
+    return res.send({ message: `${copyUser} logged out successfully` });
   }
 
   @UseGuards(JwtAuthGuard)

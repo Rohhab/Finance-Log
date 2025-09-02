@@ -117,7 +117,7 @@ export class TokenService {
 
   async revokeToken(
     refreshToken: string,
-    reason: 'Expired' | 'Manual' | 'Compromised',
+    reason: 'Refresh' | 'Manual' | 'Expired',
   ): Promise<void> {
     const { isTokenValid, refreshTokenInDb } =
       await this.checkTokenInDb(refreshToken);

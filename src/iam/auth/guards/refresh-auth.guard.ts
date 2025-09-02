@@ -1,33 +1,38 @@
-import { ExecutionContext, Injectable } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthService } from '../auth.service';
 
 @Injectable()
-export class RefreshAuthGuard extends AuthGuard() {
-  constructor(private readonly authService: AuthService) {
-    super();
-  }
+export class RefreshAuthGuard implements CanActivate {
+  constructor(private readonly authService: AuthService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
-    const response = context.switchToHttp().getResponse();
+    try {
+      const request = context.switchToHttp().getRequest();
 
-    const refreshTokenInRequest = request.cookies['refresh_token'];
-    const {
-      user,
-      accessToken: newAccess,
-      refreshToken: newRefresh,
-    } = await this.authService.refreshTokens(refreshTokenInRequest);
+      const refreshToken = request.cookies['refresh_token'];
+      if (!refreshToken) {
+        throw new UnauthorizedException('No refresh token provided.');
+      }
 
-    response.cookie('refresh_token', newRefresh, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 Days in milliseconds
-    });
-    response.setHeader('Authorization', `Bearer: ${newAccess}`);
+      const {
+        user,
+        accessToken,
+        refreshToken: newRefresh,
+      } = await this.authService.refreshTokens(refreshToken);
 
-    request.user = user;
-    return true;
+      request.user = user;
+      request.tokens = { accessToken, refreshToken: newRefresh };
+
+      return true;
+    } catch (error) {
+      throw new UnauthorizedException(
+        'Refresh token is either expired or invalid.',
+      );
+    }
   }
 }

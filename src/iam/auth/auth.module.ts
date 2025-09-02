@@ -19,7 +19,7 @@ import { GoogleStrategy } from './strategies/google-oauth2.strategy';
     JwtModule.register({
       global: true,
       secret: jwtConstants.secret,
-      signOptions: { expiresIn: '10s' },
+      signOptions: { expiresIn: '40s' },
     }),
     TypeOrmModule.forFeature([RefreshToken]),
   ],
