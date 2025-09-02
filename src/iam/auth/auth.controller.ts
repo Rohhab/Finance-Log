@@ -20,6 +20,7 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { GoogleAuthGuard } from './guards/google-oauth20.guard';
 import { UserResponseDto } from 'iam/users/dtos/user-response.dto';
+import { RefreshAuthGuard } from './guards/refresh-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -50,28 +51,15 @@ export class AuthController {
     return { access_token };
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(RefreshAuthGuard)
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   async refresh(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-  ) {
-    const refreshToken = req.cookies['refresh_token'];
-    const { accessToken: newAccess, refreshToken: newRefresh } =
-      await this.authService.refreshTokens(refreshToken);
+  ) {}
 
-    res.cookie('refresh_token', newRefresh, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 Days in milliseconds
-    });
-
-    return { access_token: newAccess };
-  }
-
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   async logout(@Req() req, @Res() res: Response) {

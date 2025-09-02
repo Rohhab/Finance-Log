@@ -48,10 +48,7 @@ export class TokenService {
 
     const now = new Date();
     return {
-      isTokenValid:
-        !existingToken.revoked &&
-        !existingToken.revokedAt &&
-        existingToken.expiresAt > now,
+      isTokenValid: !existingToken.revoked && existingToken.expiresAt > now,
       refreshTokenInDb: existingToken,
     };
   }

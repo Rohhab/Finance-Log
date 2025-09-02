@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'iam/users/users.service';
 import { CreateUserDto } from './dtos/create-user.dto';
@@ -23,6 +27,10 @@ export class AuthService {
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
+
+    if (!passwordMatch) {
+      throw new UnauthorizedException('Password is not correct.');
+    }
 
     if (user && passwordMatch) {
       const { password, ...safeUser } = user;
@@ -55,14 +63,18 @@ export class AuthService {
 
   async refreshTokens(
     refreshToken: string,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
+  ): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    user: UserResponseDto;
+  }> {
     const { isTokenValid, refreshTokenInDb } =
       await this.tokenService.checkTokenInDb(refreshToken);
 
     if (isTokenValid && refreshTokenInDb) {
       const payload = this.jwtService.verify(refreshToken);
+      const user = await this.usersService.findOne(payload.sub);
 
-      const user = await this.usersService.findOneByUsername(payload.username);
       if (!user) {
         throw new BadRequestException('User not found.');
       }
@@ -73,10 +85,12 @@ export class AuthService {
         await this.tokenService.generateAccessToken(user);
       const { refresh_token: newRefresh } =
         await this.tokenService.generateRefreshToken(user);
+      const responseUser = new UserResponseDto(user);
 
       await this.tokenService.rotateRefreshToken(newRefresh);
 
       return {
+        user: responseUser,
         accessToken: newAccess,
         refreshToken: newRefresh,
       };
