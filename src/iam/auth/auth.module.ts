@@ -11,15 +11,20 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { TokenService } from './token.service';
 import { GoogleStrategy } from './strategies/google-oauth2.strategy';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     UsersModule,
     PassportModule,
-    JwtModule.register({
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
+        signOptions: { expiresIn: '5m' },
+      }),
       global: true,
-      secret: jwtConstants.secret,
-      signOptions: { expiresIn: '5m' },
     }),
     TypeOrmModule.forFeature([RefreshToken]),
   ],

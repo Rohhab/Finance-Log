@@ -64,8 +64,6 @@ export class AuthController {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 Days in milliseconds
     });
     res.setHeader('Authorization', `Bearer ${accessToken}`);
-
-    return { user: req.user };
   }
 
   @UseGuards(JwtAuthGuard)
