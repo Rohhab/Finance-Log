@@ -16,7 +16,9 @@ export class RefreshAuthGuard implements CanActivate {
 
       const refreshToken = request.cookies['refresh_token'];
       if (!refreshToken) {
-        throw new UnauthorizedException('No refresh token provided.');
+        throw new UnauthorizedException(
+          'No refresh token provided. Cannot refresh the tokens.',
+        );
       }
 
       const {
@@ -31,7 +33,7 @@ export class RefreshAuthGuard implements CanActivate {
       return true;
     } catch (error) {
       throw new UnauthorizedException(
-        'Refresh token is either expired or invalid.',
+        'Refresh token is either expired or invalid. Cannot refresh the tokens.',
       );
     }
   }

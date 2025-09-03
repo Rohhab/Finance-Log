@@ -29,7 +29,7 @@ export class TokenService {
     });
 
     if (!existingToken) {
-      throw new BadRequestException('Token is invalid.');
+      throw new BadRequestException('Token is invalid. Finding is completed.');
     }
 
     return existingToken;
@@ -43,7 +43,9 @@ export class TokenService {
     });
 
     if (!existingToken) {
-      throw new BadRequestException('Provided refresh token is invalid.');
+      throw new BadRequestException(
+        'Provided refresh token is invalid. Check completed.',
+      );
     }
 
     const now = new Date();
@@ -73,7 +75,9 @@ export class TokenService {
     });
 
     if (existingToken) {
-      throw new ForbiddenException('User has an active session.');
+      throw new ForbiddenException(
+        'User has an active session. Cannot generate Refresh Token.',
+      );
     }
 
     return {
@@ -96,12 +100,16 @@ export class TokenService {
     const userInDb = await this.usersService.findOne(payload.sub);
 
     if (!userInDb) {
-      throw new BadRequestException('User not found.');
+      throw new BadRequestException(
+        'User not found. Cannot persist Refresh Token.',
+      );
     }
 
     if (payload.exp * 1000 < Date.now()) {
       await this.revokeToken(refreshToken, 'Expired');
-      throw new BadRequestException('Refresh token has expired.');
+      throw new BadRequestException(
+        'Refresh token has expired. Cannot persist Refresh Token.',
+      );
     }
 
     const tokenEntity = await this.refreshTokenRepository.create({
@@ -124,11 +132,13 @@ export class TokenService {
 
     if (!isTokenValid) {
       throw new BadRequestException(
-        'Refresh token is either expired or invalid.',
+        'Refresh token is either expired or invalid. Cannot revoke the token.',
       );
     }
     if (!refreshTokenInDb) {
-      throw new BadRequestException('Invalid refresh token provided.');
+      throw new BadRequestException(
+        'Invalid refresh token provided. Cannot revoke the token.',
+      );
     }
 
     refreshTokenInDb.revoked = true;

@@ -68,12 +68,14 @@ export class AuthController {
     return { user: req.user };
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  async logout(@Req() req, @Res() res: Response) {
+  async logout(@Req() req: Request, @Res() res: Response) {
     const copyUser = req.user;
     console.log(copyUser);
-    await this.authService.signOut(req.user);
+    // const {id, username} = req.user;
+    // await this.authService.signOut(req.user);
     res.clearCookie('refresh_token');
     return res.send({ message: `${copyUser} logged out successfully` });
   }

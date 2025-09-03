@@ -24,7 +24,9 @@ export class UsersService {
 
     const existingUser = await this.usersRepository.findOneBy({ username });
     if (existingUser) {
-      throw new ConflictException('User already exists.');
+      throw new ConflictException(
+        'User already exists. cannot create the user.',
+      );
     }
 
     const hashedPassword = await bcrypt.hash(password, saltOrRounds);

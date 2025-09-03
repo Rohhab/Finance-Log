@@ -74,7 +74,9 @@ export class AuthService {
       const user = await this.usersService.findOne(payload.sub);
 
       if (!user) {
-        throw new BadRequestException('User not found.');
+        throw new BadRequestException(
+          'User not found. Cannot refresh the tokens.',
+        );
       }
 
       await this.tokenService.revokeToken(refreshToken, 'Refresh');
@@ -93,7 +95,9 @@ export class AuthService {
         refreshToken: newRefresh,
       };
     } else {
-      throw new BadRequestException('Refresh token is not valid.');
+      throw new BadRequestException(
+        'Refresh token is not valid. Cannot refresh the tokens.',
+      );
     }
   }
 
