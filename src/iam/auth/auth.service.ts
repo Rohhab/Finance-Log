@@ -105,7 +105,9 @@ export class AuthService {
     const userInDb = await this.usersService.findOneByUsername(user.username);
 
     if (!userInDb) {
-      throw new BadRequestException('User not found.');
+      throw new BadRequestException(
+        'User not found. Cannot sign out the user.',
+      );
     }
 
     const aliveUserToken = await this.tokenService.findTokenForUser(userInDb);
