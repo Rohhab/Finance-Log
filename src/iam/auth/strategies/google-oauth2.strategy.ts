@@ -26,10 +26,19 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       );
     }
 
+    const googleClientcallback = configService.get<string>(
+      'GOOGLE_CLIENT_CALLBACK',
+    );
+    if (!googleClientcallback) {
+      throw new Error(
+        'GOOGLE_CLIENT_CALLBACK is not defined in environment variables',
+      );
+    }
+
     super({
       clientID: googleClientId,
       clientSecret: googleClientSecret,
-      callbackURL: 'https://localhost:3000/api/auth/google/callback',
+      callbackURL: googleClientcallback,
       scope: ['email', 'profile'],
       passReqToCallback: true,
     });
