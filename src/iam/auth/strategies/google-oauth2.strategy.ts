@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { AuthService } from '../auth.service';
-import { Strategy, VerifyCallback } from 'passport-google-oauth20';
+import { Strategy } from 'passport-google-oauth20';
 import { ConfigService } from '@nestjs/config';
+import { AuthProvider } from 'common/enums/auth-provider.enum';
+import { plainToInstance } from 'class-transformer';
+import { CreateOAuthUserDto } from '../dtos/create-oauth-user-dto';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
@@ -50,7 +53,16 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     rereshToken: string,
     profile: any,
   ): Promise<any> {
-    const user = { userName: profile.emails[0].value };
+    const username = profile.emails[0].value;
+    const provider = AuthProvider.GOOGLE;
+
+    const oAuthUserdto = plainToInstance(CreateOAuthUserDto, {
+      username,
+      provider,
+    });
+
+    const user = await this.authService.resolveOAuthUser(oAuthUserdto);
+
     return user;
   }
 }

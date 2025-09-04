@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-} from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
@@ -10,6 +6,7 @@ import { CreateUserDto } from 'iam/auth/dtos/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { UserResponseDto } from './dtos/user-response.dto';
 import { plainToInstance } from 'class-transformer';
+import { AuthProvider } from 'common/enums/auth-provider.enum';
 
 const saltOrRounds = 10;
 
@@ -19,7 +16,9 @@ export class UsersService {
     @InjectRepository(User) private usersRepository: Repository<User>,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
+  async createLocalUser(
+    createUserDto: CreateUserDto,
+  ): Promise<UserResponseDto> {
     const { username, password } = createUserDto;
 
     const existingUser = await this.usersRepository.findOneBy({ username });
@@ -33,10 +32,25 @@ export class UsersService {
     const newUser = await this.usersRepository.create({
       username,
       password: hashedPassword,
+      provider: AuthProvider.LOCAL,
     });
     await this.usersRepository.save(newUser);
 
     return plainToInstance(UserResponseDto, newUser, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  async createOAuthUser(createOAuthUserDto): Promise<UserResponseDto> {
+    const { username, provider } = createOAuthUserDto;
+
+    const oAuthUser = await this.usersRepository.create({
+      username,
+      provider,
+    });
+    await this.usersRepository.save(oAuthUser);
+
+    return plainToInstance(UserResponseDto, oAuthUser, {
       excludeExtraneousValues: true,
     });
   }

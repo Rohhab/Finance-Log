@@ -10,4 +10,7 @@ export class UserResponseDto {
 
   @Expose()
   username: string;
+
+  @Expose()
+  provider: string;
 }

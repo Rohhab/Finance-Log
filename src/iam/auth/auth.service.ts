@@ -6,10 +6,10 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'iam/users/users.service';
 import { CreateUserDto } from './dtos/create-user.dto';
-import { User } from 'iam/users/entities/user.entity';
 import * as bcrypt from 'bcrypt';
 import { TokenService } from './token.service';
 import { UserResponseDto } from 'iam/users/dtos/user-response.dto';
+import { CreateOAuthUserDto } from './dtos/create-oauth-user-dto';
 
 @Injectable()
 export class AuthService {
@@ -19,7 +19,7 @@ export class AuthService {
     private tokenService: TokenService,
   ) {}
 
-  async validateUser(username: string, password: string): Promise<any> {
+  async validateLocalUser(username: string, password: string): Promise<any> {
     const user = await this.usersService.findOneByUsername(username);
 
     if (!user) {
@@ -33,7 +33,9 @@ export class AuthService {
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
-      throw new UnauthorizedException('Password is not correct.');
+      throw new UnauthorizedException(
+        'Password is not correct. Cannot validate the user',
+      );
     }
 
     if (user && passwordMatch) {
@@ -44,8 +46,24 @@ export class AuthService {
     return null;
   }
 
+  async resolveOAuthUser(
+    createOAuthUserDto: CreateOAuthUserDto,
+  ): Promise<UserResponseDto> {
+    const localUser = await this.usersService.findOneByUsername(
+      createOAuthUserDto.username,
+    );
+
+    if (localUser && localUser.provider !== createOAuthUserDto.provider) {
+      /* TO DO: Introduce a mail service and send the user a notification of their user in our app may be compromised. */
+    }
+
+    if (localUser) return localUser;
+
+    return await this.usersService.createOAuthUser(createOAuthUserDto);
+  }
+
   async signUp(createUserDto: CreateUserDto): Promise<UserResponseDto> {
-    const userDto = await this.usersService.create(createUserDto);
+    const userDto = await this.usersService.createLocalUser(createUserDto);
     return userDto;
   }
 
