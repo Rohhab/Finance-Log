@@ -1,5 +1,6 @@
 import { Exclude, Expose } from 'class-transformer';
-import { IsEmail, MinLength } from 'class-validator';
+import { IsEmail, IsIn, MinLength } from 'class-validator';
+import { AuthProvider } from 'common/enums/auth-provider.enum';
 import { RefreshToken } from 'iam/auth/entities/refresh-token.entity';
 import {
   Column,
@@ -21,10 +22,15 @@ export class User {
   @IsEmail()
   username: string;
 
-  @Column()
+  @Column({ type: 'varchar', nullable: true })
   @Exclude()
   @MinLength(6)
-  password: string;
+  password: string | null;
+
+  @IsIn(Object.values(AuthProvider))
+  @Column({ type: 'enum', enum: AuthProvider, default: AuthProvider.LOCAL })
+  @Expose()
+  provider: string;
 
   @CreateDateColumn()
   @Expose()

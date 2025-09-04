@@ -26,6 +26,10 @@ export class AuthService {
       return null;
     }
 
+    if (!user.password) {
+      throw new UnauthorizedException('Password is missing for local user.');
+    }
+
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
