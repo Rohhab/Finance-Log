@@ -93,7 +93,18 @@ export class AuthController {
 
   @UseGuards(GoogleAuthGuard)
   @Get('google/callback')
-  redirectedFromGoogle(@Req() req: Request) {
-    return req.user;
+  async redirectedFromGoogle(@Req() req, @Res() res: Response) {
+    const { access_token, refresh_token } = await this.authService.signIn(
+      req.user,
+    );
+
+    res.cookie('refresh_token', refresh_token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 Days in milliseconds
+    });
+
+    return { access_token };
   }
 }
