@@ -10,6 +10,7 @@ import * as bcrypt from 'bcrypt';
 import { TokenService } from './token.service';
 import { UserResponseDto } from 'iam/users/dtos/user-response.dto';
 import { CreateOAuthUserDto } from './dtos/create-oauth-user-dto';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class AuthService {
@@ -57,7 +58,10 @@ export class AuthService {
       /* TO DO: Introduce a mail service and send the user a notification of their user in our app may be compromised. */
     }
 
-    if (localUser) return localUser;
+    if (localUser)
+      return plainToInstance(UserResponseDto, localUser, {
+        excludeExtraneousValues: true,
+      });
 
     return await this.usersService.createOAuthUser(createOAuthUserDto);
   }
