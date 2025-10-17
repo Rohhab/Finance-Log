@@ -1,6 +1,6 @@
 import { User } from 'iam/users/entities/user.entity';
 import { RefreshToken } from 'iam/auth/entities/refresh-token.entity';
-import { BankAccount } from 'bank-accounts/entities/bank-account.entity';
+import { BankAccount } from 'financial/bank-accounts/entities/bank-account.entity';
 import { DataSource } from 'typeorm';
 
 export default new DataSource({

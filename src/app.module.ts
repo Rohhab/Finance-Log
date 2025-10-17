@@ -2,19 +2,17 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { IamModule } from './iam/iam.module';
-import { TransactionsModule } from './transactions/transactions.module';
-import { BankAccountsModule } from './bank-accounts/bank-accounts.module';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { User } from './iam/users/entities/user.entity';
 import { RefreshToken } from 'iam/auth/entities/refresh-token.entity';
-import { BankAccount } from './bank-accounts/entities/bank-account.entity';
+import { BankAccount } from './financial/bank-accounts/entities/bank-account.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { FinancialModule } from './financial/financial.module';
 
 @Module({
   imports: [
-    TransactionsModule,
-    BankAccountsModule,
     IamModule,
+    FinancialModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),

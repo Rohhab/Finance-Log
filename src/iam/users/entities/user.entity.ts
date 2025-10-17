@@ -1,4 +1,4 @@
-import { BankAccount } from 'bank-accounts/entities/bank-account.entity';
+import { BankAccount } from 'financial/bank-accounts/entities/bank-account.entity';
 import { Exclude, Expose } from 'class-transformer';
 import { IsEmail, IsIn, MinLength } from 'class-validator';
 import { AuthProvider } from 'common/enums/auth-provider.enum';
