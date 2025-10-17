@@ -1,3 +1,4 @@
+import { BankAccount } from 'bank-accounts/entities/bank-account.entity';
 import { Exclude, Expose } from 'class-transformer';
 import { IsEmail, IsIn, MinLength } from 'class-validator';
 import { AuthProvider } from 'common/enums/auth-provider.enum';
@@ -40,7 +41,10 @@ export class User {
   @Exclude()
   updated_at: Date;
 
-  @OneToMany((type) => RefreshToken, (refreshToken) => refreshToken.user)
+  @OneToMany(() => RefreshToken, (refreshToken) => refreshToken.user)
   @Exclude()
   refreshTokens: RefreshToken[];
+
+  @OneToMany(() => BankAccount, (bankAccount) => bankAccount.userId)
+  bankAccounts: BankAccount[];
 }

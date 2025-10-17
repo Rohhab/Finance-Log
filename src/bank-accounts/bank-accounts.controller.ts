@@ -10,9 +10,11 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
+import { BankAccountsService } from './bank-accounts.service';
 
 @Controller('bank-accounts')
 export class BankAccountsController {
+  constructor(private readonly bankAccountService: BankAccountsService) {}
   @Get()
   @HttpCode(HttpStatus.OK)
   getAllBankAccounts() {
@@ -27,7 +29,9 @@ export class BankAccountsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  createBankAccount() {}
+  createBankAccount(@Body() body: any) {
+    return this.bankAccountService.createBankAccount();
+  }
 
   @Put()
   @HttpCode(HttpStatus.OK)

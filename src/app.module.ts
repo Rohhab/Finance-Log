@@ -7,6 +7,7 @@ import { BankAccountsModule } from './bank-accounts/bank-accounts.module';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { User } from './iam/users/entities/user.entity';
 import { RefreshToken } from 'iam/auth/entities/refresh-token.entity';
+import { BankAccount } from './bank-accounts/entities/bank-account.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
@@ -27,7 +28,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
-        entities: [User, RefreshToken],
+        entities: [User, RefreshToken, BankAccount],
         synchronize: true,
       }),
     }),
