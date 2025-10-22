@@ -1,3 +1,4 @@
+import { IsIBAN } from 'class-validator';
 import { User } from 'iam/users/entities/user.entity';
 import {
   Entity,
@@ -13,6 +14,7 @@ export class BankAccount {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @IsIBAN()
   @Column()
   number: string;
 
