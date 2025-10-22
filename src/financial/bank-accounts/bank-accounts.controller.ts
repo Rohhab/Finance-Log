@@ -9,11 +9,12 @@ import {
   Post,
   Put,
   Query,
+  Req,
 } from '@nestjs/common';
 import { BankAccountsService } from './bank-accounts.service';
 import { CreateBankAccountDto } from './dtos/create-bank-account.dto';
 import { UpdateBankAccountDto } from './dtos/update-bank-account.dto';
-import { BankAccountResponseDto } from './dtos/bank-account-response.dto';
+import { ResponseBankAccountDto } from './dtos/response-bank-account.dto';
 import { JwtAuthGuard } from 'iam/auth/guards/jwt-auth.guard';
 import { UseGuards } from '@nestjs/common/decorators/core/use-guards.decorator';
 
@@ -23,13 +24,13 @@ export class BankAccountsController {
   constructor(private readonly bankAccountService: BankAccountsService) {}
   @Get()
   @HttpCode(HttpStatus.OK)
-  getAllBankAccounts(): Promise<BankAccountResponseDto[]> {
+  getAllBankAccounts(): Promise<ResponseBankAccountDto[]> {
     return this.bankAccountService.getAllBankAccounts();
   }
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  getOneBankAccount(@Param('id') id: string): Promise<BankAccountResponseDto> {
+  getOneBankAccount(@Param('id') id: string): Promise<ResponseBankAccountDto> {
     return this.bankAccountService.getBankAccountById(+id);
   }
 
@@ -37,8 +38,12 @@ export class BankAccountsController {
   @HttpCode(HttpStatus.CREATED)
   createBankAccount(
     @Body() createBankAccountDto: CreateBankAccountDto,
-  ): Promise<BankAccountResponseDto> {
-    return this.bankAccountService.createBankAccount(createBankAccountDto);
+    @Req() req,
+  ): Promise<ResponseBankAccountDto> {
+    return this.bankAccountService.createBankAccount(
+      createBankAccountDto,
+      req.user.id,
+    );
   }
 
   @Put(':id')
@@ -46,8 +51,13 @@ export class BankAccountsController {
   updateBankAccount(
     @Param('id') id: string,
     @Body() updateBankAccountDto: UpdateBankAccountDto,
-  ): Promise<BankAccountResponseDto> {
-    return this.bankAccountService.updateBankAccount(+id, updateBankAccountDto);
+    @Req() req,
+  ): Promise<ResponseBankAccountDto> {
+    return this.bankAccountService.updateBankAccount(
+      +id,
+      updateBankAccountDto,
+      req.user.id,
+    );
   }
 
   @Delete(':id')

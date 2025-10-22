@@ -7,6 +7,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 
 @Entity({ name: 'bank_accounts' })
@@ -19,7 +20,8 @@ export class BankAccount {
   number: string;
 
   @ManyToOne(() => User, (user) => user.bankAccounts)
-  userId: User;
+  @JoinColumn({ name: 'userId' })
+  user: User;
 
   @Column('decimal', { precision: 10, scale: 2 })
   balance: number;

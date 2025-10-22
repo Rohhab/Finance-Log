@@ -1,8 +1,7 @@
 import { Expose } from 'class-transformer';
-import { IsString } from 'class-validator';
 
-export class BankAccountResponseDto {
-  constructor(partial: Partial<BankAccountResponseDto>) {
+export class ResponseBankAccountDto {
+  constructor(partial: Partial<ResponseBankAccountDto>) {
     Object.assign(this, partial);
   }
 
@@ -14,4 +13,7 @@ export class BankAccountResponseDto {
 
   @Expose()
   balance: number;
+
+  @Expose()
+  userId: number;
 }

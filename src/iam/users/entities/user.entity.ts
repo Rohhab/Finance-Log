@@ -45,6 +45,6 @@ export class User {
   @Exclude()
   refreshTokens: RefreshToken[];
 
-  @OneToMany(() => BankAccount, (bankAccount) => bankAccount.userId)
+  @OneToMany(() => BankAccount, (bankAccount) => bankAccount.user)
   bankAccounts: BankAccount[];
 }

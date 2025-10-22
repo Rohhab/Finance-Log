@@ -8,6 +8,7 @@ import { RefreshToken } from './entities/refresh-token.entity';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'iam/users/users.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class TokenService {
@@ -16,6 +17,7 @@ export class TokenService {
     private refreshTokenRepository: Repository<RefreshToken>,
     private jwtService: JwtService,
     private usersService: UsersService,
+    private configService: ConfigService,
   ) {}
 
   async findTokenForUser(user: AuthenticatedUser): Promise<RefreshToken> {
@@ -59,7 +61,11 @@ export class TokenService {
     user: AuthenticatedUser,
   ): Promise<{ access_token: string }> {
     const payload = { sub: user.id, username: user.username };
-    return { access_token: await this.jwtService.signAsync(payload) };
+    return {
+      access_token: await this.jwtService.signAsync(payload, {
+        expiresIn: this.configService.get<string>('ACCESS_TOKEN_EXPIRATION'),
+      }),
+    };
   }
 
   async generateRefreshToken(
@@ -82,7 +88,7 @@ export class TokenService {
 
     return {
       refresh_token: await this.jwtService.signAsync(payload, {
-        expiresIn: '7d',
+        expiresIn: this.configService.get<string>('REFRESH_TOKEN_EXPIRATION'),
       }),
     };
   }

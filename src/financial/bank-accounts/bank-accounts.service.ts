@@ -3,9 +3,10 @@ import { BankAccount } from './entities/bank-account.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateBankAccountDto } from './dtos/create-bank-account.dto';
-import { BankAccountResponseDto } from './dtos/bank-account-response.dto';
+import { ResponseBankAccountDto } from './dtos/response-bank-account.dto';
 import { plainToInstance } from 'class-transformer';
 import { UpdateBankAccountDto } from './dtos/update-bank-account.dto';
+import { User } from 'iam/users/entities/user.entity';
 
 @Injectable()
 export class BankAccountsService {
@@ -14,29 +15,30 @@ export class BankAccountsService {
     private bankAccountRepository: Repository<BankAccount>,
   ) {}
 
-  async getBankAccountById(id: number): Promise<BankAccountResponseDto> {
+  async getBankAccountById(id: number): Promise<ResponseBankAccountDto> {
     const bankAccount = await this.bankAccountRepository.findOneBy({ id });
 
     if (!bankAccount) {
       throw new BadRequestException('Bank account not found');
     }
 
-    return plainToInstance(BankAccountResponseDto, bankAccount, {
+    return plainToInstance(ResponseBankAccountDto, bankAccount, {
       excludeExtraneousValues: true,
     });
   }
 
-  async getAllBankAccounts(): Promise<BankAccountResponseDto[]> {
+  async getAllBankAccounts(): Promise<ResponseBankAccountDto[]> {
     const bankAccounts = await this.bankAccountRepository.find();
 
-    return plainToInstance(BankAccountResponseDto, bankAccounts, {
+    return plainToInstance(ResponseBankAccountDto, bankAccounts, {
       excludeExtraneousValues: true,
     });
   }
 
   async createBankAccount(
     createBankAccountDto: CreateBankAccountDto,
-  ): Promise<BankAccountResponseDto> {
+    userId: number,
+  ): Promise<ResponseBankAccountDto> {
     const { number, balance } = createBankAccountDto;
 
     if (await this.bankAccountRepository.findOneBy({ number })) {
@@ -48,11 +50,12 @@ export class BankAccountsService {
     const newAccount = this.bankAccountRepository.create({
       number,
       balance,
+      user: { id: userId } as User,
     });
 
     await this.bankAccountRepository.save(newAccount);
 
-    return plainToInstance(BankAccountResponseDto, newAccount, {
+    return plainToInstance(ResponseBankAccountDto, newAccount, {
       excludeExtraneousValues: true,
     });
   }
@@ -60,18 +63,25 @@ export class BankAccountsService {
   async updateBankAccount(
     id: number,
     updateBankAccountDto: UpdateBankAccountDto,
-  ): Promise<BankAccountResponseDto> {
+    userId: number,
+  ): Promise<ResponseBankAccountDto> {
+    const { number, balance } = updateBankAccountDto;
+
     const bankAccount = await this.bankAccountRepository.findOneBy({ id });
 
     if (!bankAccount) {
       throw new BadRequestException('Bank account not found');
     }
 
-    Object.assign(bankAccount, updateBankAccountDto);
+    Object.assign(bankAccount, {
+      number: number ?? bankAccount.number,
+      balance: balance ?? bankAccount.balance,
+      user: { id: userId } as User,
+    });
 
     await this.bankAccountRepository.save(bankAccount);
 
-    return plainToInstance(BankAccountResponseDto, bankAccount, {
+    return plainToInstance(ResponseBankAccountDto, bankAccount, {
       excludeExtraneousValues: true,
     });
   }
