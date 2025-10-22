@@ -14,7 +14,10 @@ import { BankAccountsService } from './bank-accounts.service';
 import { CreateBankAccountDto } from './dtos/create-bank-account.dto';
 import { UpdateBankAccountDto } from './dtos/update-bank-account.dto';
 import { BankAccountResponseDto } from './dtos/bank-account-response.dto';
+import { JwtAuthGuard } from 'iam/auth/guards/jwt-auth.guard';
+import { UseGuards } from '@nestjs/common/decorators/core/use-guards.decorator';
 
+@UseGuards(JwtAuthGuard)
 @Controller('bank-accounts')
 export class BankAccountsController {
   constructor(private readonly bankAccountService: BankAccountsService) {}
