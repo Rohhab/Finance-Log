@@ -22,6 +22,7 @@ import { UseGuards } from '@nestjs/common/decorators/core/use-guards.decorator';
 @Controller('bank-accounts')
 export class BankAccountsController {
   constructor(private readonly bankAccountService: BankAccountsService) {}
+
   @Get()
   @HttpCode(HttpStatus.OK)
   getAllBankAccounts(): Promise<ResponseBankAccountDto[]> {
@@ -61,6 +62,7 @@ export class BankAccountsController {
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   deleteBankAccount(@Param('id') id: string) {
     return this.bankAccountService.deleteBankAccount(id);
   }
