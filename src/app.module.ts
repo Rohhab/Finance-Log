@@ -8,6 +8,8 @@ import { RefreshToken } from 'iam/auth/entities/refresh-token.entity';
 import { BankAccount } from './financial/bank-accounts/entities/bank-account.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { FinancialModule } from './financial/financial.module';
+import { Transaction } from 'financial/transactions/entities/transaction.entity';
+import { Category } from 'financial/transactions/entities/category.entity';
 
 @Module({
   imports: [
@@ -26,7 +28,7 @@ import { FinancialModule } from './financial/financial.module';
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
-        entities: [User, RefreshToken, BankAccount],
+        entities: [User, RefreshToken, BankAccount, Transaction, Category],
         synchronize: true,
       }),
     }),

@@ -18,7 +18,7 @@ export class RefreshToken {
   @Column()
   token: string;
 
-  @ManyToOne((type) => User, (user) => user.refreshTokens)
+  @ManyToOne(() => User, (user) => user.refreshTokens)
   user: User;
 
   @Column()

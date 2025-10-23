@@ -1,5 +1,5 @@
-import { IsIBAN } from 'class-validator';
 import { User } from 'iam/users/entities/user.entity';
+import { Transaction } from 'financial/transactions/entities/transaction.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -7,7 +7,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
-  JoinColumn,
+  OneToMany,
 } from 'typeorm';
 
 @Entity({ name: 'bank_accounts' })
@@ -15,13 +15,14 @@ export class BankAccount {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @IsIBAN()
   @Column()
   number: string;
 
   @ManyToOne(() => User, (user) => user.bankAccounts)
-  @JoinColumn({ name: 'userId' })
   user: User;
+
+  @OneToMany(() => Transaction, (transaction) => transaction.bankAccount)
+  transactions: Transaction[];
 
   @Column('decimal', { precision: 10, scale: 2 })
   balance: number;
