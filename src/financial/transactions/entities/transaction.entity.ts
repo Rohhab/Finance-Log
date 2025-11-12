@@ -29,9 +29,9 @@ export class Transaction {
   @UpdateDateColumn()
   updated_at: Date;
 
-  @ManyToOne(() => BankAccount, (bankAccount) => bankAccount.id)
+  @ManyToOne(() => BankAccount, (bankAccount) => bankAccount.transactions)
   bankAccount: BankAccount;
 
-  @ManyToOne(() => Category, (category) => category.id)
+  @ManyToOne(() => Category, (category) => category.transactions)
   category: Category;
 }

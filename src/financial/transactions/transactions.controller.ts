@@ -26,7 +26,7 @@ export class TransactionsController {
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   getOneTransaction(@Param('id') id: string): string {
-    return 'This action returns transaction with id: ${id}';
+    return `This action returns transaction with id: ${id}`;
   }
 
   @Post()
