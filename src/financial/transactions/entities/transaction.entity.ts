@@ -8,14 +8,15 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Category } from './category.entity';
+import { TransactionType } from 'common/enums/transaction-type.enum';
 
 @Entity({ name: 'transactions' })
 export class Transaction {
   @PrimaryGeneratedColumn()
   id: Number;
 
-  @Column()
-  type: string;
+  @Column({ type: 'enum', enum: TransactionType })
+  type: TransactionType;
 
   @Column()
   description: string;

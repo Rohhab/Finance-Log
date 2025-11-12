@@ -17,6 +17,11 @@ export class TransactionService {
   ) {}
 
   createTransaction() {
-    return this.transactionRepository.create();
+    // we need to create a transaction:
+    // Each xaction shall have a user
+    // Then we have to intercept user id in the controller and pass it here
+    // Each xaction is related to a certain category, either previously created or to be created on the fly
+    // Each xaction is related to one and only one bank account. Then user might want to share that data through the controller. We check here if the account is owned by that user.
+    // Finally we persist the data containing the userId, transaction ammount, type (shouldn't we pre-define types like withdrawal etc.?), category and bank account to the database.
   }
 }
