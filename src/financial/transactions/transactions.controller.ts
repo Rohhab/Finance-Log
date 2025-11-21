@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
@@ -7,10 +8,13 @@ import {
   Param,
   Post,
   Put,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { TransactionService } from './transactions.service';
 import { JwtAuthGuard } from 'iam/auth/guards/jwt-auth.guard';
+import { CreateTransactionDto } from './dtos/create-transaction.dto';
+import { ResponseTransactionDto } from './dtos/response-transaction.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('transactions')
@@ -31,8 +35,15 @@ export class TransactionsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  createTransaction(): string {
-    return 'This action creates a transaction';
+  createTransaction(
+    @Req() req,
+    @Body() createTransactionDto: CreateTransactionDto,
+  ): Promise<ResponseTransactionDto> {
+    const user = req.user as AuthenticatedUser;
+    return this.transactionsService.createTransaction(
+      user.id,
+      createTransactionDto,
+    );
   }
 
   @Put(':id')

@@ -1,9 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Transaction } from './entities/transaction.entity';
 import { Repository } from 'typeorm';
 import { BankAccount } from 'financial/bank-accounts/entities/bank-account.entity';
 import { Category } from './entities/category.entity';
+import { TransactionType } from 'common/enums/transaction-type.enum';
+import { CreateTransactionDto } from './dtos/create-transaction.dto';
+import { plainToInstance } from 'class-transformer';
+import { ResponseTransactionDto } from './dtos/response-transaction.dto';
 
 @Injectable()
 export class TransactionService {
@@ -16,12 +24,67 @@ export class TransactionService {
     private readonly categoryRepository: Repository<Category>,
   ) {}
 
-  createTransaction() {
-    // we need to create a transaction:
-    // Each xaction shall have a user
-    // Then we have to intercept user id in the controller and pass it here
-    // Each xaction is related to a certain category, either previously created or to be created on the fly
-    // Each xaction is related to one and only one bank account. Then user might want to share that data through the controller. We check here if the account is owned by that user.
-    // Finally we persist the data containing the userId, transaction ammount, type (shouldn't we pre-define types like withdrawal etc.?), category and bank account to the database.
+  async createTransaction(
+    userId: number,
+    createTransactionDto: CreateTransactionDto,
+  ) {
+    const bankAccount = await this.bankAccountRepository.findOne({
+      where: { id: createTransactionDto.bankAccountId, user: { id: userId } },
+      relations: ['user'],
+    });
+
+    if (!bankAccount) {
+      throw new ForbiddenException(
+        'You do not have access to this bank account',
+      );
+    }
+
+    const normalizedCategory = createTransactionDto.category
+      .trim()
+      .toLowerCase();
+    let category = await this.categoryRepository.findOne({
+      where: { name: normalizedCategory },
+    });
+    if (!category) {
+      category = this.categoryRepository.create({
+        name: normalizedCategory,
+      });
+      await this.categoryRepository.save(category);
+    }
+
+    if (createTransactionDto.type === TransactionType.WITHDRAWAL) {
+      if (bankAccount.balance < createTransactionDto.amount) {
+        throw new BadRequestException('Insufficient funds');
+      }
+      bankAccount.balance -= createTransactionDto.amount;
+    } else if (createTransactionDto.type === TransactionType.DEPOSIT) {
+      bankAccount.balance += createTransactionDto.amount;
+    } else {
+      throw new BadRequestException('Invalid transaction type');
+    }
+
+    const transaction = this.transactionRepository.create({
+      type: createTransactionDto.type,
+      amount: createTransactionDto.amount,
+      bankAccount,
+      category,
+      description: `${createTransactionDto.type} of ${createTransactionDto.amount} in category ${createTransactionDto.category}`,
+    });
+
+    await this.bankAccountRepository.save(bankAccount);
+    await this.transactionRepository.save(transaction);
+
+    return plainToInstance(
+      ResponseTransactionDto,
+      {
+        type: transaction.type,
+        description: transaction.description,
+        amount: transaction.amount,
+        performedAt: transaction.performed_at,
+        categoryName: transaction.category.name,
+        bankAccountNumber: transaction.bankAccount.number,
+      },
+      { excludeExtraneousValues: true },
+    );
   }
 }

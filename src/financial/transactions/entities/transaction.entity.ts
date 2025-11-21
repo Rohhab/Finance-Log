@@ -13,7 +13,7 @@ import { TransactionType } from 'common/enums/transaction-type.enum';
 @Entity({ name: 'transactions' })
 export class Transaction {
   @PrimaryGeneratedColumn()
-  id: Number;
+  id: number;
 
   @Column({ type: 'enum', enum: TransactionType })
   type: TransactionType;
